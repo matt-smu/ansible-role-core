@@ -1,0 +1,54 @@
+---
+# Ubuntu-18 setup
+#
+
+# http://coreemu.github.io/core/install.html#ubuntu--1804
+#
+
+- name: Install dependencies
+  become: yes
+  apt:
+    pkg:
+      - git
+      - python3-pip
+      - automake
+      - pkg-config 
+      - gcc 
+      - libev-dev 
+      - bridge-utils 
+      - ebtables 
+      - python3-dev 
+      - python3-setuptools 
+      - tk 
+      - libtk-img
+      - python3-sphinx
+    state: present
+    update_cache: yes
+  tags: [package]
+
+- name: Pip install grpcIO
+  become: yes 
+  pip:
+    name: ['grpcio-tools','sphinx_rtd_theme']
+
+- name: ensure core install path exists
+  become: yes
+  file:
+    path: "{{core_build_dir}}"
+    state: directory
+    owner: "{{ansible_user_id}}"
+  tags: [package]
+
+- name: clone CORE
+  git:
+    repo: "{{ core_repo_url }}"
+    dest: "{{ core_build_dir }}"
+    version: "{{ core_git_version }}"
+  creates: "{{core_build_dir}}/bootstrap.sh"
+  tags: [package]
+
+- name: build CORE 
+  shell: ./bootstrap.sh && PYTHON=python3 ./configure && make && sudo make install && make doc
+  args:
+    chdir: "{{core_build_dir}}"
+    creates: "{{core_build_dir}}/core-python-{{core_release_version}}.tgz"

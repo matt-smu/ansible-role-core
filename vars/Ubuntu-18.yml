@@ -1,0 +1,10 @@
+---
+# defaults file for ansible-role-core
+# http://coreemu.github.io/core/install.html#ubuntu--1804
+#
+core_install_dir: /usr
+core_repo_url: https://github.com/coreemu/core.git
+core_build_dir: /opt/core
+core_git_version: master
+core_release_version: 5.3.1
+
