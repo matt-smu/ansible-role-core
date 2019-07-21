@@ -7,4 +7,8 @@ core_repo_url: https://github.com/coreemu/core.git
 core_build_dir: /opt/core
 core_git_version: master
 core_release_version: 5.3.1
-
+os_env:
+  - key: PYTHONPATH 
+    value : /usr/local/lib/python3.6/site-packages  
+  - key: CORE_HOME 
+    value : /opt/core

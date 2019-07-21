@@ -10,6 +10,7 @@
   apt:
     pkg:
       - git
+      - python-pip
       - python3-pip
       - automake
       - pkg-config 
@@ -17,11 +18,19 @@
       - libev-dev 
       - bridge-utils 
       - ebtables 
+      - python-dev 
       - python3-dev 
+      - python-setuptools 
       - python3-setuptools 
       - tk 
       - libtk-img
+      - python-sphinx
       - python3-sphinx
+      - ruby 
+      - ruby-dev 
+      - rubygems 
+      - build-essential
+      - rpm
     state: present
     update_cache: yes
   tags: [package]
@@ -29,7 +38,8 @@
 - name: Pip install grpcIO
   become: yes 
   pip:
-    name: ['grpcio-tools','sphinx_rtd_theme']
+    name: ['grpcio-tools','sphinx_rtd_theme', 'lxml', 'future']
+    executable: pip3
 
 - name: ensure core install path exists
   become: yes
@@ -44,11 +54,32 @@
     repo: "{{ core_repo_url }}"
     dest: "{{ core_build_dir }}"
     version: "{{ core_git_version }}"
-  creates: "{{core_build_dir}}/bootstrap.sh"
   tags: [package]
 
+- name: ensure core fpm output path exist
+  become: yes
+  file:
+    path: "/tmp/core-build"
+    state: directory
+    owner: "{{ansible_user_id}}"
+  tags: [package]
+
+- name: set env where core dumps eggs
+  become: yes
+  lineinfile:
+    dest: "/etc/environment"
+    state: present
+    regexp: "^{{ item.key }}"
+    line: "{{ item.key }}={{ item.value}}"
+  with_items: "{{ os_env }}"
+
 - name: build CORE 
-  shell: ./bootstrap.sh && PYTHON=python3 ./configure && make && sudo make install && make doc
+  become: no
+  #shell: ./bootstrap.sh && PYTHON=python3.6 ./configure && make && sudo make install && make doc && make fpm DESTDIR=/tmp/core-build
+  shell: ./bootstrap.sh && PYTHON=python3.6 ./configure && make && sudo make install 
   args:
     chdir: "{{core_build_dir}}"
     creates: "{{core_build_dir}}/core-python-{{core_release_version}}.tgz"
+  environment:
+    PYTHONPATH: /usr/local/lib/python3.6/site-packages
+
